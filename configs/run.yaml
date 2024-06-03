@@ -1,0 +1,24 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - trainer: default
+  - model: sim_agent
+  - datamodule: h5_womd
+  - callbacks: wandb
+  - loggers: wandb
+  - resume: empty
+
+hydra:
+  run:
+    dir: logs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  job:
+    chdir: True
+
+work_dir: ${hydra:runtime.cwd}
+seed: 2023
+action: fit # fit, validate, test
+
+# debug: False
+# print_config: True
+# ignore_warnings: True

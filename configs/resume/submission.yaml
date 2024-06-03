@@ -1,0 +1,36 @@
+checkpoint: null
+resume_trainer: True
+model_overrides:
+  n_vis_batch: 0
+  n_joint_future_wosac: 128
+  wosac_post_processing:
+    step_gt: 90
+    step_current: 10
+    const_vel_z_sim: False
+    const_vel_no_sim: True
+    w_road_edge: 0.0
+    use_wosac_col: True
+  sub_womd_reactive_replay:
+    is_active: True
+    method_name: TB_replay
+    description: "TrafficBots V1.5: https://github.com/zhejz/TrafficBotsV1.5"
+    authors: [Zhejun Zhang, Christos Sakaridis, Luc Van Gool]
+    affiliation: "CVL, ETH Zurich"
+    method_link: "https://github.com/zhejz/TrafficBotsV1.5"
+    account_name: zhejun.zhang94@gmail.com
+  sub_womd_joint_future_pred:
+    is_active: True
+    method_name: TB_pred
+    description: "TrafficBots V1.5: https://github.com/zhejz/TrafficBotsV1.5"
+    authors: [Zhejun Zhang, Christos Sakaridis, Luc Van Gool]
+    affiliation: "CVL, ETH Zurich"
+    method_link: "https://github.com/zhejz/TrafficBotsV1.5"
+    account_name: zhejun.zhang94@gmail.com
+  sub_wosac:
+    is_active: True
+    method_name: TrafficBotsV1.5
+    description: "TrafficBots V1.5: https://github.com/zhejz/TrafficBotsV1.5"
+    authors: [Zhejun Zhang, Christos Sakaridis, Luc Van Gool]
+    affiliation: "CVL, ETH Zurich"
+    method_link: "https://github.com/zhejz/TrafficBotsV1.5"
+    account_name: zhejun.zhang94@gmail.com

@@ -1,0 +1,13 @@
+_target_: data_modules.data_h5_womd.DataH5womd
+
+data_dir: /cluster/scratch/zhejzhan/h5_wosac
+val_scenarios_dir: /cluster/scratch/zhejzhan/h5_wosac/val_scenarios
+# val_scenarios_dir: null
+filename_train: training
+filename_val: validation
+filename_test: testing
+n_ag_sim: 64
+
+batch_size_train: 2
+batch_size_test: 6
+num_workers: 4

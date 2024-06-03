@@ -1,0 +1,264 @@
+_target_: pl_modules.waymo_motion.WaymoMotion
+
+# 0 <= time_step_current < time_step_gt <= time_step_end
+# time_step_gt <= n_steps in data
+time_step_current: 10
+time_step_gt: 90
+time_step_end: 90
+time_step_sim_start: 1
+hidden_dim: 128
+n_vis_batch: 1
+n_joint_future_womd: 6
+n_joint_future_wosac: 32
+joint_future_pred_deterministic_k0: False
+
+pre_processing:
+  scene_centric:
+    _target_: data_modules.scene_centric.SceneCentricPreProcessing
+    tl_mode: lane # lane, stop
+    navi_mode: dest # cmd, goal, dest, dummy
+    dropout_p_history: 0.1
+
+p_training_rollout_prior: 0.1 # !
+training_detach_model_input: True # !
+training_deterministic_action: True
+pred_navi_after_reached: False # !
+model:
+  _target_: models.traffic_bots.TrafficBots
+  hidden_dim: ${..hidden_dim}
+  pairwise_relative: True
+  temp_window_size: 11
+  n_tgt_knn: 32
+  dist_limit: 500
+  tf_cfg:
+    d_model: ${...hidden_dim}
+    n_head: 4
+    k_feedforward: 4
+    dropout_p: 0.1
+    bias: True
+    activation: relu
+    out_layernorm: False
+    apply_q_rpe: False
+  pose_rpe:
+    mode: pe_xy_yaw # xy_dir, pe_xy_dir, pe_xy_yaw
+    theta_xy: 1e3 # for mode pe_xy_dir, pe_xy_yaw
+    theta_cs: 1e1 # for mode pe_xy_dir
+  mp_encoder:
+    n_layer_tf: 8
+    pose_emb:
+      mode: mpa_pl # xy_dir, mpa_pl, pe_xy_dir, pe_xy_yaw
+      theta_xy: ${...pose_rpe.theta_xy}
+      theta_cs: ${...pose_rpe.theta_cs}
+    input_encoder:
+      mode: cat # input, cat, add
+      n_layer: 3
+      mlp_dropout_p: 0
+      mlp_use_layernorm: False
+    pl_encoder:
+      pooling_mode: max_valid # max_valid, first, last, last_valid, mean_valid
+      n_layer: 3
+      mlp_dropout_p: 0.1
+      mlp_use_layernorm: False
+      use_pointnet: True
+  tl_encoder:
+    temp_stack_input: False # !
+    tl_lane_detach_mp_feature: True
+    n_layer_tf: 4
+    k_tgt_knn_tl2tl: 0.75
+    k_tgt_knn_tl2mp: 0.75
+    k_dist_limit: 0.5
+    pose_emb:
+      mode: pe_xy_yaw # xy_dir, mpa_pl, pe_xy_dir, pe_xy_yaw
+      theta_xy: ${...pose_rpe.theta_xy}
+      theta_cs: ${...pose_rpe.theta_cs}
+    input_encoder:
+      mode: add # input, cat, add
+      n_layer: 3
+      mlp_dropout_p: 0
+      mlp_use_layernorm: False
+  tl_state_predictor:
+    detach_tl_feature: True
+    n_layer: 3
+    rnn_dropout_p: 0.1
+  ag_encoder:
+    n_layer_tf: 4
+    k_tgt_knn_ag2mp: 2.0
+    k_tgt_knn_ag2tl: 0.8
+    k_tgt_knn_ag2ag: 0.8
+    k_dist_limit: 1.0
+    rnn_latent_temp_pool_mode: max_valid # max_valid, first, last, last_valid, mean_valid
+    pose_emb:
+      mode: pe_xy_yaw # xy_dir, mpa_pl, pe_xy_dir, pe_xy_yaw
+      theta_xy: ${...pose_rpe.theta_xy}
+      theta_cs: ${...pose_rpe.theta_cs}
+    input_encoder:
+      mode: cat # input, cat, add
+      n_layer: 3
+      mlp_dropout_p: 0
+      mlp_use_layernorm: False
+  latent_encoder:
+    latent_dim: 16 # set to <= 0 for dummy latent
+    temporal_down_sample_rate: 5
+    share_post_prior_encoders: False # !
+    latent_post:
+      dist_type: diag_gaus # ! ["std_gaus", "diag_gaus", "std_cat", "cat"]
+      n_cat: 8
+      log_std: 0.0 # !
+      mlp_use_layernorm: False # !
+      n_layer: 3
+      branch_type: False
+    latent_prior:
+      dist_type: std_gaus # ! ["std_gaus", "diag_gaus", "std_cat", "cat"]
+      n_cat: ${..latent_post.n_cat}
+      log_std: ${..latent_post.log_std}
+      mlp_use_layernorm: ${..latent_post.mlp_use_layernorm}
+      n_layer: ${..latent_post.n_layer}
+      branch_type: ${..latent_post.branch_type}
+  navi_encoder:
+    dest_detach_mp_feature: True
+  navi_predictor:
+    detach_input: True
+    rnn_res_add: True
+    n_layer_tf: 3
+    n_layer_mlp: 3
+    mlp_use_layernorm: True
+    k_tgt_knn: 1.0
+    k_dist_limit: 1000
+    goal_log_std: 2.0
+  add_navi_latent:
+    mode: cat # "add", "mul", "cat" or null
+    res_add: True # !
+    n_layer: 3
+    mlp_use_layernorm: False
+    mlp_dropout_p: 0.1
+  action_head:
+    log_std: -2
+    n_layer: 3
+    branch_type: True
+    mlp_use_layernorm: False
+
+teacher_forcing_training:
+  step_spawn_agent: ${..time_step_current}
+  step_warm_start: ${..time_step_current}
+  step_horizon: 0 # !
+  step_horizon_decrease_per_epoch: 0 # !
+  prob_forcing_agent: 0.3 # !
+  prob_forcing_agent_decrease_per_epoch: 0.1 # !
+  prob_scheduled_sampling: 0 # !
+  prob_scheduled_sampling_decrease_per_epoch: 0 # !
+  gt_sdc: False
+  threshold_xy: -1 # in meter
+  threshold_yaw: -1 # in degree
+  threshold_spd: -1 # in m/s
+
+dynamics:
+  use_veh_dynamics_for_all: False
+  veh:
+    _target_: utils.dynamics.MultiPathPP
+    max_acc: 5
+    max_yaw_rate: 1.5
+  cyc:
+    _target_: utils.dynamics.MultiPathPP
+    max_acc: 6 # !
+    max_yaw_rate: 3 # !
+  ped:
+    _target_: utils.dynamics.MultiPathPP
+    max_acc: 7 # !
+    max_yaw_rate: 7 # !
+
+# * post_processing
+womd_post_processing:
+  k_pred: 6
+  use_ade: True
+  score_temperature: -1
+  mpa_nms_thresh: [2.0, 2.0, 2.0] # veh, ped, cyc
+  mtr_nms_thresh: []
+  aggr_thresh: []
+  n_iter_em: 3
+
+wosac_post_processing:
+  step_gt: ${..time_step_gt}
+  step_current: ${..time_step_current}
+  const_vel_z_sim: True
+  const_vel_no_sim: True
+  w_road_edge: 0.0
+  use_wosac_col: True
+
+# * loss
+differentiable_reward:
+  w_collision: 0 # >=0 # !
+  reduce_collsion_with_max: True
+  use_il_loss: True
+  # all weight here >= 0
+  l_pos:
+    weight: 1e-1 # !
+    criterion: SmoothL1Loss # "MSELoss", "Smooth1Loss" or any pytorch loss in torch.nn
+  l_rot:
+    weight: 1e1 # !
+    criterion: SmoothL1Loss # "MSELoss", "Smooth1Loss" or any pytorch loss in torch.nn
+    angular_type: cosine # null, cast, cosine, vector
+  l_spd:
+    weight: 1e-1 # !
+    criterion: SmoothL1Loss # "MSELoss", "Smooth1Loss" or any pytorch loss in torch.nn
+
+training_metrics:
+  w_vae_kl: 1.0 # !
+  kl_balance_scale: 0.2 # ! 0.1
+  kl_free_nats: 1.0 # ! 1.0
+  kl_for_unseen_agent: True # !
+  w_diffbar_reward: 1.0 # !
+  w_navi: 1.0 # !
+  w_tl_state: 1.0 # !
+  w_relevant_agent: 0 # !
+  p_loss_for_irrelevant: 1.0 # !
+  step_training_start: 10
+  temporal_discount: -1 # !
+  loss_for_teacher_forcing: True # !
+
+# * optimizer
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 2e-4 # !
+  weight_decay: 1e-1
+  betas: [0.9, 0.95]
+lr_navi: ${.optimizer.lr}
+lr_scheduler:
+  _target_: torch.optim.lr_scheduler.StepLR
+  gamma: 0.5
+  step_size: 7
+
+# ! no need to change below
+sub_womd_reactive_replay:
+  is_active: False
+  method_name: womd_replay
+  description: scr_womd reactive_replay
+  authors: [NAME1, NAME2]
+  affiliation: AFFILIATION
+  method_link: METHOD_LINK
+  account_name: zhejun.zhang94@gmail.com
+
+sub_womd_joint_future_pred:
+  is_active: False
+  method_name: womd_pred
+  description: scr_womd joint_future_pred
+  authors: ${..sub_womd_reactive_replay.authors}
+  affiliation: ${..sub_womd_reactive_replay.affiliation}
+  method_link: ${..sub_womd_reactive_replay.method_link}
+  account_name: ${..sub_womd_reactive_replay.account_name}
+
+sub_wosac:
+  is_active: False
+  method_name: wosac
+  description: scr_wosac
+  authors: ${..sub_womd_reactive_replay.authors}
+  affiliation: ${..sub_womd_reactive_replay.affiliation}
+  method_link: ${..sub_womd_reactive_replay.method_link}
+  account_name: ${..sub_womd_reactive_replay.account_name}
+
+teacher_forcing_reactive_replay:
+  step_spawn_agent: 90
+  step_warm_start: ${..time_step_current}
+
+teacher_forcing_joint_future_pred:
+  step_spawn_agent: ${..time_step_current}
+  step_warm_start: ${..time_step_current}
