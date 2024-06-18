@@ -4,49 +4,29 @@ This repository includes an updated version of [TrafficBots](https://github.com/
 
 In this repository you will find the training, validation, testing and visualization code for the Waymo Open Sim Agents Challenge ([WOSAC](https://waymo.com/open/challenges/2024/sim-agents/)) and the Waymo Open Dataset Challenges ([WOMD](https://waymo.com/open/challenges/2024/motion-prediction/)) for motion prediction. 
 
-## TrafficBots
-
 <p align="center">
-     <img src="docs/trafficbots_banner.jpg" alt="TrafficBots for realistic behavior simulation.", width=620px>
-     <br/> <B>TrafficBots</B>, a multi-agent policy that generates realistic behaviors for bot agents by learning from real-world data. <br/>
+     <img src="docs/CVPR_winner.jpg" alt="TrafficBots V1.5 won the 3rd place in WOSAC 2024.", width=300px>
+     <br/><B>TrafficBots V1.5</B> won the 3rd place in Waymo Open Sim Agents Challenge at the CVPR 2024 Workshop on Autonomous Driving.<br/>
 </p>
 
-> **TrafficBots: Towards World Models for Autonomous Driving Simulation and Motion Prediction**            
-> [Zhejun Zhang](https://zhejz.github.io/), [Alexander Liniger](https://alexliniger.github.io/), [Dengxin Dai](https://scholar.google.com/citations?user=T51W57YAAAAJ&hl=en), Fisher Yu and [Luc Van Gool](https://vision.ee.ethz.ch/people-details.OTAyMzM=.TGlzdC8zMjcxLC0xOTcxNDY1MTc4.html).<br/>
-> 
-> [ICRA 2023](https://ieeexplore.ieee.org/document/10161243)<br/>
-> [Project Website with Videos](https://zhejz.github.io/trafficbots)<br/>
-> [arXiv Paper](https://arxiv.org/abs/2303.04116)
-
-```bibtex
-@inproceedings{zhang2023trafficbots,
-  title     = {{TrafficBots}: Towards World Models for Autonomous Driving Simulation and Motion Prediction},
-  author    = {Zhang, Zhejun and Liniger, Alexander and Dai, Dengxin and Yu, Fisher and Van Gool, Luc},
-  booktitle = {International Conference on Robotics and Automation (ICRA)},
-  year = {2023}
-}
-```
-
-## HPTR: Heterogeneous Polyline Transformer with Relative pose encoding
-
 <p align="center">
-     <img src="docs/hptr_banner.png" alt="HPTR realizes real-time and on-board motion prediction without sacrificing the performance.", width=650px>
-     <br/><B>HPTR</B> realizes real-time and on-board motion prediction without sacrificing the performance. <br/>
+     <img src="docs/banner.png" alt="TrafficBots V1.5 for realistic behavior simulation.", width=650px>
+     <br/> <B>TrafficBots V1.5</B> for the closed-loop simulation of traffic agents. It is a simple baseline that combines TrafficBots and HPTR.<br/>
 </p>
 
-> **Real-Time Motion Prediction via Heterogeneous Polyline Transformer with Relative Pose Encoding**            
-> [Zhejun Zhang](https://zhejz.github.io/), [Alexander Liniger](https://alexliniger.github.io/), [Christos Sakaridis](https://people.ee.ethz.ch/~csakarid/), Fisher Yu and [Luc Van Gool](https://vision.ee.ethz.ch/people-details.OTAyMzM=.TGlzdC8zMjcxLC0xOTcxNDY1MTc4.html).<br/>
+> **TrafficBots V1.5: Traffic Simulation via Conditional VAEs and Transformers with Relative Pose Encoding**            
+> [Zhejun Zhang](https://zhejz.github.io/), [Christos Sakaridis](https://people.ee.ethz.ch/~csakarid/) and [Luc Van Gool](https://insait.ai/prof-luc-van-gool/).<br/>
 > 
-> [NeurIPS 2023](https://neurips.cc/virtual/2023/poster/71285)<br/>
-> [Project Website](https://zhejz.github.io/hptr)<br/>
-> [arXiv Paper](https://arxiv.org/abs/2310.12970)
+> [Waymo Open Dataset Challenges 2024 Winners](https://waymo.com/open/challenges/)<br/>
+> [CVPR 2024 Workshop on Autonomous Driving](https://cvpr2024.wad.vision/)<br/>
+> [arXiv Paper](https://arxiv.org/abs/2406.10898)
 
 ```bibtex
-@inproceedings{zhang2023hptr,
-  title = {Real-Time Motion Prediction via Heterogeneous Polyline Transformer with Relative Pose Encoding},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  author = {Zhang, Zhejun and Liniger, Alexander and Sakaridis, Christos and Yu, Fisher and Van Gool, Luc},
-  year = {2023},
+@article{zhang2024trafficbots,
+  title={TrafficBots V1.5: Traffic Simulation via Conditional VAEs and Transformers with Relative Pose Encoding},
+  author={Zhang, Zhejun and Sakaridis, Christos and Van Gool, Luc},
+  journal={arXiv preprint arXiv:2406.10898},
+  year={2024}
 }
 ```
 
